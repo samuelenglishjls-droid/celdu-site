@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>주식회사 셀듀</title>
+<meta name="description" content="주식회사 셀듀는 정상어학원 캠퍼스를 운영하는 교육기업입니다. 2010년 인천남동 개원 이후 여섯 곳의 캠퍼스를 운영하고 있습니다.">
+<meta property="og:title" content="주식회사 셀듀">
+<meta property="og:description" content="정상어학원 캠퍼스를 운영하는 교육기업. 2010년부터 여섯 곳의 캠퍼스.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;600&family=IBM+Plex+Sans+KR:wght@300;400;500&display=swap">
+<style>
+  :root {
+    --ground:   #F6F8FA;
+    --surface:  #FFFFFF;
+    --ink:      #16283C;
+    --muted:    #5C6B7C;
+    --rule:     #DCE2E9;
+    --accent:   #9E6F27;
+    --font-display: "Noto Serif KR", "Apple SD Gothic Neo", serif;
+    --font-body:    "IBM Plex Sans KR", "Apple SD Gothic Neo", system-ui, sans-serif;
+    --measure: 34rem;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground:  #10161D;
+      --surface: #171F28;
+      --ink:     #E7ECF1;
+      --muted:   #97A5B3;
+      --rule:    #2A343E;
+      --accent:  #D2A05C;
+    }
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-weight: 400;
+    font-size: 1rem;
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a { color: inherit; text-decoration-color: var(--rule); text-underline-offset: 0.2em; }
+  a:hover { text-decoration-color: var(--accent); }
+  a:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  .shell {
+    max-width: 46rem;
+    margin: 0 auto;
+    padding: clamp(2.5rem, 7vw, 5.5rem) clamp(1.25rem, 5vw, 2.5rem) 4rem;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(3rem, 7vw, 4.75rem);
+  }
+
+  /* ---------- masthead ---------- */
+
+  .masthead {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    padding-bottom: clamp(2rem, 5vw, 2.75rem);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .wordmark {
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: 0.75rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0;
+  }
+
+  .masthead h1 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(2.1rem, 6.5vw, 3.1rem);
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+    margin: 0;
+  }
+
+  .lede {
+    margin: 0;
+    max-width: var(--measure);
+    font-size: clamp(1rem, 2.4vw, 1.1rem);
+    color: var(--muted);
+    text-wrap: pretty;
+  }
+
+  /* ---------- sections ---------- */
+
+  section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .eyebrow {
+    margin: 0;
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  h2 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(1.3rem, 3.4vw, 1.55rem);
+    line-height: 1.4;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .prose {
+    display: flex;
+    flex-direction: column;
+    gap: 1.15rem;
+    max-width: var(--measure);
+  }
+
+  .prose p {
+    margin: 0;
+    font-weight: 300;
+    text-wrap: pretty;
+  }
+
+  .prose strong { font-weight: 500; }
+
+  /* ---------- 연혁 timeline ---------- */
+
+  .timeline {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0;
+  }
+
+  .timeline li {
+    display: grid;
+    grid-template-columns: 4.5rem 1fr;
+    align-items: baseline;
+    column-gap: clamp(1rem, 4vw, 2rem);
+    padding: 0.95rem 0;
+    border-top: 1px solid var(--rule);
+  }
+
+  .timeline li:last-child { border-bottom: 1px solid var(--rule); }
+
+  .year {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+    font-weight: 500;
+    font-size: 0.95rem;
+    color: var(--accent);
+    letter-spacing: 0.02em;
+  }
+
+  .event { font-weight: 300; }
+
+  /* the 7-year pause between the first and second campus is real history —
+     mark it so the reader sees the rhythm rather than a flat list */
+  .timeline li.after-pause { border-top-style: dashed; }
+
+  .timeline-note {
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--muted);
+    font-weight: 300;
+  }
+
+  /* ---------- 캠퍼스 ---------- */
+
+  .regions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+    gap: 1.75rem 2.5rem;
+    margin: 0;
+  }
+
+  .region { display: flex; flex-direction: column; gap: 0.6rem; }
+
+  .region dt {
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .region dd {
+    margin: 0;
+    font-weight: 300;
+    line-height: 2;
+  }
+
+  /* ---------- 사업 영역 ---------- */
+
+  .practice {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: 1.5rem;
+    margin: 0;
+  }
+
+  .practice > div {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    padding: 1.4rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .practice h3 {
+    margin: 0;
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    font-weight: 500;
+  }
+
+  .practice p {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 300;
+    color: var(--muted);
+    text-wrap: pretty;
+  }
+
+  /* ---------- footer ---------- */
+
+  .site-footer {
+    padding-top: clamp(2rem, 5vw, 2.5rem);
+    border-top: 1px solid var(--rule);
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    font-size: 0.875rem;
+  }
+
+  .company-info {
+    margin: 0;
+    display: grid;
+    grid-template-columns: 4.5rem 1fr;
+    gap: 0.5rem clamp(1rem, 4vw, 2rem);
+    align-items: baseline;
+  }
+
+  .company-info dt { color: var(--muted); font-weight: 400; }
+  .company-info dd { margin: 0; font-weight: 300; }
+
+  .copyright {
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--muted);
+    font-weight: 300;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <header class="masthead">
+    <p class="wordmark">Celdu</p>
+    <h1>주식회사 셀듀</h1>
+    <p class="lede">2010년부터 여섯 곳의 캠퍼스에서 학생들을 만나고 있습니다.</p>
+  </header>
+
+  <section aria-labelledby="about">
+    <p class="eyebrow">회사 소개</p>
+    <h2 id="about">정상어학원 캠퍼스를 운영하는 교육기업입니다</h2>
+    <div class="prose">
+      <p>2010년 인천 남동에서 첫 캠퍼스를 연 이후, 인천과 부천, 시흥을 거쳐 부산과 김해에 이르는 여섯 곳에서 학생들을 만나고 있습니다.</p>
+      <p>셀듀는 한 곳이 자리를 잡는 데 필요한 시간을 존중해왔습니다. 14년 동안 여섯 개 — 빠른 속도는 아닙니다. 다만 <strong>문을 연 캠퍼스가 지금도 그 지역에 남아 있다는 것</strong>, 셀듀는 그것을 가장 중요한 기록으로 여깁니다.</p>
+    </div>
+  </section>
+
+  <section aria-labelledby="history">
+    <p class="eyebrow">연혁</p>
+    <h2 id="history">셀듀가 만들어온 역사</h2>
+    <ol class="timeline">
+      <li><span class="year">2010</span><span class="event">인천남동 정상어학원 개원</span></li>
+      <li class="after-pause"><span class="year">2017</span><span class="event">인천인하 정상어학원 개원</span></li>
+      <li><span class="year">2019</span><span class="event">부천소사옥길 정상어학원 개원</span></li>
+      <li><span class="year">2022</span><span class="event">시흥은계 정상어학원 개원</span></li>
+      <li><span class="year">2023</span><span class="event">부산명지국제 정상어학원 개원</span></li>
+      <li><span class="year">2024</span><span class="event">김해율하 정상어학원 개원</span></li>
+    </ol>
+    <p class="timeline-note">첫 캠퍼스에서 두 번째까지 7년이 걸렸습니다. 그 기간에 쌓은 운영 방식이 이후 다섯 곳의 기준이 되었습니다.</p>
+  </section>
+
+  <section aria-labelledby="campuses">
+    <p class="eyebrow">운영 캠퍼스</p>
+    <h2 id="campuses">수도권과 경남권, 여섯 곳</h2>
+    <dl class="regions">
+      <div class="region">
+        <dt>수도권</dt>
+        <dd>인천남동<br>인천인하<br>부천소사옥길<br>시흥은계</dd>
+      </div>
+      <div class="region">
+        <dt>경남권</dt>
+        <dd>부산명지국제<br>김해율하</dd>
+      </div>
+    </dl>
+  </section>
+
+  <section aria-labelledby="practice">
+    <p class="eyebrow">사업 영역</p>
+    <h2 id="practice">하는 일</h2>
+    <div class="practice">
+      <div>
+        <h3>어학원 운영</h3>
+        <p>정상어학원 여섯 개 캠퍼스를 운영하며, 각 지역에서 초·중등 학생을 대상으로 영어 교육 과정을 제공합니다.</p>
+      </div>
+      <div>
+        <h3>교육 자료 공급</h3>
+        <p>재원생과 학부모, 그리고 각 캠퍼스에 필요한 교재와 교육 자료를 공급합니다.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <dl class="company-info">
+      <dt>상호</dt>
+      <dd>주식회사 셀듀</dd>
+
+      <dt>문의</dt>
+      <dd><a href="mailto:celdu_strategy@celdu.net">celdu_strategy@celdu.net</a></dd>
+
+      <!-- ▼ 준비되면 아래 주석을 풀고 대괄호를 채우세요.
+           채우지 않은 항목은 주석 상태로 두면 화면에 나오지 않습니다.
+
+      <dt>대표자</dt>
+      <dd>[대표자명]</dd>
+
+      <dt>소재지</dt>
+      <dd>[주소]</dd>
+
+      <dt>사업자등록번호</dt>
+      <dd>[000-00-00000]</dd>
+
+      <dt>대표전화</dt>
+      <dd>[00-0000-0000]</dd>
+      -->
+    </dl>
+    <p class="copyright">© 2026 주식회사 셀듀. 정상어학원은 해당 브랜드 권리자의 상표입니다.</p>
+  </footer>
+
+</div>
+</body>
+</html>
