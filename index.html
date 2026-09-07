@@ -261,9 +261,13 @@
   .company-info {
     margin: 0;
     display: grid;
-    grid-template-columns: 4.5rem 1fr;
-    gap: 0.5rem clamp(1rem, 4vw, 2rem);
+    grid-template-columns: 7rem 1fr;
+    gap: 0.55rem clamp(0.75rem, 3vw, 1.5rem);
     align-items: baseline;
+  }
+
+  @media (max-width: 26rem) {
+    .company-info { grid-template-columns: 5.5rem 1fr; font-size: 0.825rem; }
   }
 
   .company-info dt { color: var(--muted); font-weight: 400; }
@@ -348,24 +352,20 @@
       <dt>상호</dt>
       <dd>주식회사 셀듀</dd>
 
-      <dt>문의</dt>
-      <dd><a href="mailto:celdu_strategy@celdu.net">celdu_strategy@celdu.net</a></dd>
-
-      <!-- ▼ 준비되면 아래 주석을 풀고 대괄호를 채우세요.
-           채우지 않은 항목은 주석 상태로 두면 화면에 나오지 않습니다.
-
-      <dt>대표자</dt>
-      <dd>[대표자명]</dd>
+      <dt>대표이사</dt>
+      <dd>김양훈</dd>
 
       <dt>소재지</dt>
-      <dd>[주소]</dd>
+      <dd>서울특별시 구로구 부광로 88, B동 201호</dd>
 
       <dt>사업자등록번호</dt>
-      <dd>[000-00-00000]</dd>
+      <dd>372-88-03986</dd>
 
       <dt>대표전화</dt>
-      <dd>[00-0000-0000]</dd>
-      -->
+      <dd><a href="tel:+821044816743">010-4481-6743</a></dd>
+
+      <dt>문의</dt>
+      <dd><a href="mailto:celdu_strategy@celdu.net">celdu_strategy@celdu.net</a></dd>
     </dl>
     <p class="copyright">© 2026 주식회사 셀듀. 정상어학원은 해당 브랜드 권리자의 상표입니다.</p>
   </footer>
