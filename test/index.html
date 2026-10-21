@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>CELDU 답안 제출</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --green:#0F6E56;--green-light:#E1F5EE;--green-mid:#1D9E75;
+  --amber:#854F0B;--amber-light:#FAEEDA;
+  --purple:#6B3FA0;--purple-light:#F0E9F9;
+  --blue:#1B5E8C;--blue-light:#E3F0F9;
+  --red:#A32D2D;--red-light:#FCEBEB;
+  --border:#e8e8e8;--bg:#f7f7f5;--white:#fff;
+  --text:#1a1a1a;--text-sub:#6b6b6b;--text-hint:#aaa;
+  --r:14px;--r-sm:9px;--shadow:0 1px 3px rgba(0,0,0,0.08);
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Pretendard','Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.header{background:var(--white);border-bottom:1px solid var(--border);padding:0 16px;position:sticky;top:0;z-index:20;box-shadow:var(--shadow)}
+.header-inner{max-width:600px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:52px}
+.logo{font-size:17px;font-weight:800;color:var(--green);letter-spacing:-0.5px}
+.test-badge{font-size:12px;background:var(--green-light);color:var(--green);padding:4px 10px;border-radius:20px;font-weight:600;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.progress-wrap{background:var(--white);border-bottom:1px solid var(--border);padding:10px 16px}
+.progress-inner{max-width:600px;margin:0 auto}
+.progress-info{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.progress-text{font-size:12px;color:var(--text-sub)}
+.progress-count{font-size:12px;font-weight:600;color:var(--green)}
+.progress-bar{height:4px;background:#eee;border-radius:2px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--green-mid),var(--green));border-radius:2px;transition:width 0.35s ease}
+.container{max-width:600px;margin:0 auto;padding:16px}
+
+.start-wrap{display:flex;flex-direction:column;align-items:center;padding:32px 0 24px;text-align:center}
+.start-icon{width:64px;height:64px;background:var(--green-light);border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:16px}
+.start-title{font-size:22px;font-weight:800;margin-bottom:6px;letter-spacing:-0.5px}
+.start-sub{font-size:14px;color:var(--text-sub);line-height:1.6;margin-bottom:24px}
+.info-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;width:100%;margin-bottom:20px;text-align:left}
+.info-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #f0f0f0;font-size:14px}
+.info-row:last-child{border-bottom:none}
+.info-label{color:var(--text-sub)}
+.info-val{font-weight:600}
+.field-label{font-size:13px;color:var(--text-sub);margin-bottom:7px;display:block;font-weight:500;text-align:left;width:100%}
+.code-input{width:100%;padding:14px 16px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:17px;font-weight:600;letter-spacing:2px;color:var(--text);background:var(--white);text-transform:uppercase;transition:border-color 0.15s;margin-bottom:4px}
+.code-input:focus{outline:none;border-color:var(--green-mid)}
+.code-input.error{border-color:var(--red)}
+.code-hint{font-size:12px;color:var(--text-hint);margin-bottom:16px;text-align:left;width:100%}
+.test-select{width:100%;padding:13px 16px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:15px;color:var(--text);background:var(--white);margin-bottom:16px;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23999' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
+.test-select:focus{outline:none;border-color:var(--green-mid)}
+.err-text{font-size:13px;color:var(--red);margin-bottom:8px;display:none;text-align:left;width:100%}
+.btn{width:100%;padding:14px;border:none;border-radius:var(--r-sm);font-size:15px;font-weight:700;cursor:pointer;transition:all 0.15s}
+.btn-primary{background:var(--green);color:white;box-shadow:0 2px 8px rgba(15,110,86,0.2)}
+.btn-primary:hover{opacity:0.92}
+.btn-primary:disabled{opacity:0.4;cursor:not-allowed;box-shadow:none}
+
+.q-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;margin-bottom:10px;box-shadow:var(--shadow);animation:fadeUp 0.18s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.q-meta{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.q-num{width:30px;height:30px;border-radius:50%;background:var(--green-light);color:var(--green);font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.q-num.brief{background:var(--purple-light);color:var(--purple)}
+.q-num.short{background:var(--amber-light);color:var(--amber)}
+.q-num.essay{background:var(--blue-light);color:var(--blue)}
+.q-num.group{background:#eceef0;color:#444}
+.q-type-badge{font-size:11px;padding:3px 9px;border-radius:20px;background:var(--bg);color:var(--text-sub);font-weight:500}
+.q-unit{font-size:13px;color:var(--text-sub);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.q-points{font-size:12px;font-weight:600;color:var(--green);background:var(--green-light);padding:3px 9px;border-radius:20px;flex-shrink:0}
+.q-answered{font-size:18px;flex-shrink:0}
+
+.choices{display:flex;flex-direction:column;gap:7px}
+.choice{display:flex;align-items:center;gap:12px;padding:11px 14px;border:1.5px solid var(--border);border-radius:var(--r-sm);cursor:pointer;transition:all 0.12s;background:var(--white);-webkit-tap-highlight-color:transparent}
+.choice:active{transform:scale(0.99)}
+.choice:hover{border-color:var(--green-mid);background:var(--green-light)}
+.choice.selected{border-color:var(--green);background:var(--green-light)}
+.choice-num{width:26px;height:26px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--text-sub);flex-shrink:0;transition:all 0.12s}
+.choice.selected .choice-num{background:var(--green);border-color:var(--green);color:white}
+.choice-text{font-size:14px;color:var(--text);line-height:1.4}
+
+.subj-input{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:15px;font-family:inherit;color:var(--text);background:var(--white);resize:vertical;line-height:1.5;transition:border-color 0.15s}
+.subj-input:focus{outline:none;border-color:var(--green-mid)}
+.essay-hint{font-size:12px;color:var(--text-hint);margin-top:6px}
+
+/* 세부문항 (1단계) */
+.sub-group{display:flex;flex-direction:column;gap:10px}
+.sub-item{background:var(--bg);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px 14px}
+.sub-item-label{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.sub-num{font-size:12px;font-weight:700;color:var(--amber);background:var(--amber-light);padding:2px 8px;border-radius:20px}
+.sub-points{font-size:11px;color:var(--text-hint)}
+.sub-answered{font-size:14px}
+.sub-input{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:14px;font-family:inherit;color:var(--text);background:var(--white);resize:vertical;transition:border-color 0.15s}
+.sub-input:focus{outline:none;border-color:var(--green-mid)}
+.group-total{font-size:12px;color:var(--text-hint);margin-top:6px;text-align:right}
+
+/* 2단계 중첩: subgroup 안 빈칸 위아래 */
+.blank-wrap{display:flex;flex-direction:column;gap:7px;margin-top:6px}
+.blank-row{display:flex;align-items:center;gap:8px}
+.blank-tag{font-size:10px;color:var(--text-hint);width:18px;flex-shrink:0;text-align:center}
+.blank-input{flex:1;padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:14px;font-family:inherit;color:var(--text);background:var(--white);transition:border-color 0.15s}
+.blank-input:focus{outline:none;border-color:var(--green-mid)}
+
+.submit-bar{position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:1px solid var(--border);padding:12px 16px;z-index:20;box-shadow:0 -2px 12px rgba(0,0,0,0.06)}
+.submit-bar-inner{max-width:600px;margin:0 auto;display:flex;align-items:center;gap:10px}
+.submit-info{font-size:13px;color:var(--text-sub);flex:1;line-height:1.4}
+.submit-info strong{color:var(--text);font-weight:700;display:block}
+.submit-btn{padding:12px 22px;background:var(--green);color:white;border:none;border-radius:var(--r-sm);font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap;transition:opacity 0.15s}
+.submit-btn:disabled{opacity:0.4;cursor:not-allowed}
+
+.done-wrap{display:flex;flex-direction:column;align-items:center;padding:56px 0 40px;text-align:center}
+.done-icon{font-size:56px;margin-bottom:16px;animation:pop 0.4s ease}
+@keyframes pop{from{transform:scale(0.5);opacity:0}to{transform:scale(1);opacity:1}}
+.done-title{font-size:22px;font-weight:800;margin-bottom:8px;letter-spacing:-0.5px}
+.done-sub{font-size:14px;color:var(--text-sub);line-height:1.7;margin-bottom:28px}
+.done-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:18px 20px;width:100%;text-align:left}
+.done-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f0f0f0;font-size:14px}
+.done-row:last-child{border-bottom:none}
+.done-label{color:var(--text-sub)}
+.done-val{font-weight:700}
+
+.spinner{width:18px;height:18px;border:2.5px solid rgba(255,255,255,0.4);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite;display:inline-block;vertical-align:-3px;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-wrap{display:flex;flex-direction:column;align-items:center;padding:60px 16px;gap:12px;color:var(--text-sub);font-size:14px}
+.spinner-lg{width:32px;height:32px;border:3px solid #eee;border-top-color:var(--green);border-radius:50%;animation:spin 0.8s linear infinite}
+.hidden{display:none!important}
+.pb-safe{padding-bottom:84px}
+</style>
+</head>
+<body>
+
+<div id="screen-loading">
+  <div class="header"><div class="header-inner"><div class="logo">CELDU</div></div></div>
+  <div class="loading-wrap"><div class="spinner-lg"></div><div>시험 정보 불러오는 중...</div></div>
+</div>
+
+<div id="screen-start" class="hidden">
+  <div class="header">
+    <div class="header-inner">
+      <div class="logo">CELDU</div>
+      <div class="test-badge" id="start-badge">답안 제출</div>
+    </div>
+  </div>
+  <div class="container">
+    <div class="start-wrap">
+      <div class="start-icon">📝</div>
+      <div class="start-title">답안 제출</div>
+      <div class="start-sub">시험지를 받으셨나요?<br>회원코드와 시험을 선택하고 시작하세요.</div>
+      <div class="info-card">
+        <div class="info-row"><span class="info-label">시험명</span><span class="info-val" id="info-testname">-</span></div>
+        <div class="info-row"><span class="info-label">대문항 수</span><span class="info-val" id="info-qcount">-</span></div>
+        <div class="info-row"><span class="info-label">전체 빈칸</span><span class="info-val" id="info-blanks">-</span></div>
+        <div class="info-row"><span class="info-label">총 배점</span><span class="info-val" id="info-points">-</span></div>
+      </div>
+      <label class="field-label">시험 선택</label>
+      <select class="test-select" id="test-select" onchange="onTestChange()">
+        <option value="">시험을 선택하세요</option>
+      </select>
+      <label class="field-label">회원코드</label>
+      <input class="code-input" id="code-input" type="text" placeholder="U0000" maxlength="10"
+        autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false"
+        oninput="onCodeInput()" onkeydown="if(event.key==='Enter')startTest()">
+      <div class="code-hint">예: U1234 · 모르면 선생님께 문의하세요</div>
+      <div class="err-text" id="code-err"></div>
+      <button class="btn btn-primary" id="start-btn" onclick="startTest()" disabled>시작하기</button>
+    </div>
+  </div>
+</div>
+
+<div id="screen-test" class="hidden">
+  <div class="header">
+    <div class="header-inner">
+      <div class="logo">CELDU</div>
+      <div class="test-badge" id="test-badge-top">-</div>
+    </div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-inner">
+      <div class="progress-info">
+        <span class="progress-text" id="progress-text">답안 입력 중</span>
+        <span class="progress-count" id="progress-count">0 / 0</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    </div>
+  </div>
+  <div class="container pb-safe" id="q-list"></div>
+  <div class="submit-bar">
+    <div class="submit-bar-inner">
+      <div class="submit-info">
+        <strong id="submit-code-display"></strong>
+        <span id="submit-info-text">전체 문항을 입력해주세요</span>
+      </div>
+      <button class="submit-btn" id="submit-btn" onclick="doSubmit()" disabled>제출하기</button>
+    </div>
+  </div>
+</div>
+
+<div id="screen-done" class="hidden">
+  <div class="header">
+    <div class="header-inner">
+      <div class="logo">CELDU</div>
+      <div class="test-badge">제출 완료</div>
+    </div>
+  </div>
+  <div class="container">
+    <div class="done-wrap">
+      <div class="done-icon">✅</div>
+      <div class="done-title">제출 완료!</div>
+      <div class="done-sub">답안이 성공적으로 제출되었습니다.<br>시험지는 선생님께 반납해주세요.</div>
+      <div class="done-card">
+        <div class="done-row"><span class="done-label">회원코드</span><span class="done-val" id="done-code">-</span></div>
+        <div class="done-row"><span class="done-label">시험명</span><span class="done-val" id="done-test">-</span></div>
+        <div class="done-row"><span class="done-label">제출 시간</span><span class="done-val" id="done-time">-</span></div>
+        <div class="done-row"><span class="done-label">입력 빈칸</span><span class="done-val" id="done-answered" style="color:var(--green)">-</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API_URL = 'https://script.google.com/macros/s/AKfycbw4Qj_GZvSlLHI7p94RuLY_EAiPPkvkVT9Q3hbDC_rCi0BZpKslueIw5n8_Qjt4rljQuA/exec';
+
+// Apps Script doPost 호출 (구글 로그인 정보 없이 데이터만 주고받음)
+async function api(fn, ...args){
+  let lastErr;
+  for(let attempt=0; attempt<2; attempt++){
+    try{
+      const r = await fetch(API_URL, {
+        method:'POST',
+        headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body: JSON.stringify({ fn, args }),
+        credentials:'omit', redirect:'follow',
+      });
+      const j = await r.json();
+      if(!j.ok) throw new Error(j.error || '서버 오류');
+      return j.result;
+    }catch(e){ lastErr = e; if(fn==='submitAnswers') break; await new Promise(r=>setTimeout(r,800)); }
+  }
+  throw lastErr;
+}
+
+let memberCode = '';
+let currentTestId = '';
+let questions = [];   // 계층 트리
+let answers = {};     // qid(빈칸 단위) → 값
+let isSubmitted = false;
+
+const TYPE_LABEL = { obj:'객관식', brief:'단답형', short:'서술형', essay:'논술형' };
+
+// ── 임시저장 ──────────────────────────────────────────
+function getStorageKey(){ return `celdu_draft_${currentTestId}_${memberCode}`; }
+function saveDraft(){
+  if(!memberCode||!currentTestId) return;
+  try{ localStorage.setItem(getStorageKey(), JSON.stringify({answers, savedAt:new Date().toISOString()})); }catch(e){}
+}
+function loadDraft(){
+  try{ const r=localStorage.getItem(getStorageKey()); return r?JSON.parse(r):null; }catch(e){ return null; }
+}
+function clearDraft(){ try{ localStorage.removeItem(getStorageKey()); }catch(e){} }
+
+// ── 이탈 경고 ─────────────────────────────────────────
+function beforeUnloadHandler(e){ if(isSubmitted) return; e.preventDefault(); e.returnValue=''; return ''; }
+function enableExitWarning(){ window.addEventListener('beforeunload', beforeUnloadHandler); }
+function disableExitWarning(){ window.removeEventListener('beforeunload', beforeUnloadHandler); }
+
+// ── 모든 빈칸 qid 수집 (트리 평탄화) ──────────────────
+function collectBlankQids(){
+  const out = [];
+  questions.forEach(q => {
+    if(q.type === 'group'){
+      q.subs.forEach(sub => {
+        if(sub.type === 'subgroup'){
+          sub.blanks.forEach(b => out.push({ qid:b.qid, type:b.type }));
+        } else {
+          out.push({ qid:sub.qid, type:sub.type });
+        }
+      });
+    } else {
+      out.push({ qid:q.qid, type:q.type });
+    }
+  });
+  return out;
+}
+
+// ── 초기화 ────────────────────────────────────────────
+window.onload = function(){
+  api('getTestList')
+    .then(res => {
+      if(!res.success || !res.tests.length){ showScreen('start'); return; }
+      const sel = document.getElementById('test-select');
+      res.tests.forEach(tid => {
+        const opt = document.createElement('option');
+        opt.value = tid; opt.textContent = tid; sel.appendChild(opt);
+      });
+      sel.value = res.tests[0];
+      onTestChange();
+    })
+    .catch(() => showScreen('start'));
+};
+
+function onTestChange(){
+  const tid = document.getElementById('test-select').value;
+  if(!tid) return;
+  currentTestId = tid;
+  document.getElementById('info-testname').textContent = tid;
+  document.getElementById('info-qcount').textContent = '불러오는 중...';
+
+  api('getQuestions', tid)
+    .then(res => {
+      if(!res.success) return;
+      questions = res.questions;
+      const blanks = collectBlankQids();
+      const totalPts = sumPoints();
+      document.getElementById('info-testname').textContent = tid;
+      document.getElementById('info-qcount').textContent = questions.length + '문항';
+      document.getElementById('info-blanks').textContent = blanks.length + '개';
+      document.getElementById('info-points').textContent = totalPts + '점';
+      document.getElementById('start-badge').textContent = tid;
+      showScreen('start');
+      checkStartReady();
+    })
+    .catch(() => showScreen('start'));
+}
+
+function sumPoints(){
+  let total = 0;
+  questions.forEach(q => {
+    if(q.type === 'group'){
+      q.subs.forEach(sub => {
+        if(sub.type === 'subgroup') sub.blanks.forEach(b => total += b.points||0);
+        else total += sub.points||0;
+      });
+    } else total += q.points||0;
+  });
+  return total;
+}
+
+// ── 시작 ──────────────────────────────────────────────
+function onCodeInput(){
+  const val = document.getElementById('code-input').value.trim().toUpperCase();
+  document.getElementById('code-input').value = val;
+  document.getElementById('code-err').style.display = 'none';
+  document.getElementById('code-input').classList.remove('error');
+  checkStartReady();
+}
+function checkStartReady(){
+  const code = document.getElementById('code-input').value.trim();
+  const tid  = document.getElementById('test-select').value;
+  document.getElementById('start-btn').disabled = !(code.length>=2 && tid);
+}
+function startTest(){
+  const val = document.getElementById('code-input').value.trim().toUpperCase();
+  const tid = document.getElementById('test-select').value;
+  if(!val.startsWith('U')){ showErr('회원코드는 U로 시작해야 합니다. (예: U1234)'); return; }
+  if(val.length<4){ showErr('올바른 회원코드를 입력해주세요.'); return; }
+  if(!tid || !questions.length){ showErr('시험을 선택해주세요.'); return; }
+  memberCode = val;
+  currentTestId = tid;
+
+  const draft = loadDraft();
+  answers = (draft && draft.answers) ? draft.answers : {};
+
+  document.getElementById('test-badge-top').textContent = tid;
+  document.getElementById('submit-code-display').textContent = memberCode;
+  showScreen('test');
+  renderQuestions();
+  restoreAnswerUI();
+  enableExitWarning();
+}
+function showErr(msg){
+  const el = document.getElementById('code-err');
+  el.textContent = msg; el.style.display = 'block';
+  document.getElementById('code-input').classList.add('error');
+}
+
+// ── 렌더링 ────────────────────────────────────────────
+function renderQuestions(){
+  document.getElementById('q-list').innerHTML =
+    questions.map((q, idx) => renderCard(q, idx)).join('');
+  updateProgress();
+}
+
+function renderCard(q, idx){
+  if(q.type === 'obj')   return renderObj(q, idx);
+  if(q.type === 'brief') return renderText(q, idx, 'brief');
+  if(q.type === 'short') return renderText(q, idx, 'short');
+  if(q.type === 'essay') return renderText(q, idx, 'essay');
+  if(q.type === 'group') return renderGroup(q, idx);
+  return '';
+}
+
+function renderObj(q, idx){
+  return `
+    <div class="q-card">
+      <div class="q-meta">
+        <div class="q-num">${idx+1}</div>
+        <span class="q-type-badge">객관식</span>
+        <span class="q-unit">${q.unit||''}</span>
+        <span class="q-points">${q.points}점</span>
+        <span class="q-answered" id="check-${q.qid}"></span>
+      </div>
+      <div class="choices">
+        ${(q.choices||[]).map((c,i) => `
+          <div class="choice" id="choice-${q.qid}-${i+1}" onclick="selectChoice('${q.qid}',${i+1})">
+            <div class="choice-num">${i+1}</div>
+            <div class="choice-text">${c}</div>
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+function renderText(q, idx, kind){
+  const rowsMap = { brief:1, short:3, essay:6 };
+  const rows = rowsMap[kind] || 2;
+  const numCls = `q-num ${kind}`;
+  const hint = kind==='essay' ? `<div class="essay-hint">✍️ 자유롭게 길게 작성하세요</div>` : '';
+  const ph = kind==='brief' ? '짧은 답을 입력하세요' : '답을 영어로 입력하세요';
+  return `
+    <div class="q-card">
+      <div class="q-meta">
+        <div class="${numCls}">${idx+1}</div>
+        <span class="q-type-badge">${TYPE_LABEL[kind]}</span>
+        <span class="q-unit">${q.unit||''}</span>
+        <span class="q-points">${q.points}점</span>
+        <span class="q-answered" id="check-${q.qid}"></span>
+      </div>
+      <textarea class="subj-input" id="subj-${q.qid}" rows="${rows}" placeholder="${ph}"
+        autocomplete="off" autocorrect="off" spellcheck="false"
+        oninput="onSubjInput('${q.qid}',this.value)"></textarea>
+      ${hint}
+    </div>`;
+}
+
+// 그룹: 1단계 세부문항(leaf) 또는 2단계 중첩(subgroup) 혼합 가능
+function renderGroup(q, idx){
+  const kind = q.groupType; // brief/short/essay
+  let totalPts = 0;
+  const inner = q.subs.map(sub => {
+    if(sub.type === 'subgroup') return renderSubgroup(sub, kind, (p)=>{ totalPts+=p; });
+    totalPts += sub.points||0;
+    return renderLeaf(sub, kind);
+  }).join('');
+  // totalPts 재계산 (콜백 타이밍 이슈 방지)
+  totalPts = 0;
+  q.subs.forEach(sub => {
+    if(sub.type === 'subgroup') sub.blanks.forEach(b => totalPts += b.points||0);
+    else totalPts += sub.points||0;
+  });
+  return `
+    <div class="q-card">
+      <div class="q-meta">
+        <div class="q-num group">${idx+1}</div>
+        <span class="q-type-badge">${TYPE_LABEL[kind]||'세부문항'}</span>
+        <span class="q-unit">${q.unit||''}</span>
+        <span class="q-points">${totalPts}점</span>
+        <span class="q-answered" id="check-group-${q.qid}"></span>
+      </div>
+      <div class="sub-group">${inner}</div>
+      <div class="group-total">모든 빈칸을 입력해야 완료</div>
+    </div>`;
+}
+
+// 1단계 세부문항 (leaf): (1) 입력칸 하나
+function renderLeaf(sub, kind){
+  const rowsMap = { brief:1, short:2, essay:5 };
+  const rows = rowsMap[kind] || 2;
+  return `
+    <div class="sub-item">
+      <div class="sub-item-label">
+        <span class="sub-num">(${sub.label})</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="sub-points">${sub.points}점</span>
+          <span class="sub-answered" id="check-${sub.qid}"></span>
+        </div>
+      </div>
+      <textarea class="sub-input" id="subj-${sub.qid}" rows="${rows}" placeholder="답을 입력하세요"
+        autocomplete="off" autocorrect="off" spellcheck="false"
+        oninput="onSubjInput('${sub.qid}',this.value)"></textarea>
+    </div>`;
+}
+
+// 2단계 중첩 (subgroup): (1) 아래 빈칸 여러개 위아래
+function renderSubgroup(sub, kind){
+  const pts = sub.blanks.reduce((a,b)=>a+(b.points||0),0);
+  const blanksHtml = sub.blanks.map((b, i) => `
+    <div class="blank-row">
+      <span class="blank-tag">${String.fromCharCode(97+i)}.</span>
+      <input class="blank-input" id="subj-${b.qid}" type="text" placeholder="답 입력"
+        autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+        oninput="onSubjInput('${b.qid}',this.value)">
+      <span class="sub-answered" id="check-${b.qid}"></span>
+    </div>`).join('');
+  return `
+    <div class="sub-item">
+      <div class="sub-item-label">
+        <span class="sub-num">(${sub.label})</span>
+        <span class="sub-points">${pts}점</span>
+      </div>
+      <div class="blank-wrap">${blanksHtml}</div>
+    </div>`;
+}
+
+// ── 답안 핸들러 ───────────────────────────────────────
+function selectChoice(qid, val){
+  document.querySelectorAll(`[id^="choice-${qid}-"]`).forEach(el => el.classList.remove('selected'));
+  document.getElementById(`choice-${qid}-${val}`).classList.add('selected');
+  answers[qid] = String(val);
+  const chk = document.getElementById(`check-${qid}`); if(chk) chk.textContent = '✓';
+  updateProgress(); saveDraft();
+}
+
+function onSubjInput(qid, val){
+  if(val.trim()){
+    answers[qid] = val.trim();
+    const chk = document.getElementById(`check-${qid}`); if(chk) chk.textContent = '✓';
+  } else {
+    delete answers[qid];
+    const chk = document.getElementById(`check-${qid}`); if(chk) chk.textContent = '';
+  }
+  updateGroupCheck(qid);
+  updateProgress(); saveDraft();
+}
+
+// 그룹 체크표시: 그룹 내 모든 빈칸 입력되면 ✓
+function updateGroupCheck(qid){
+  const top = qid.split('-')[0];
+  const parent = questions.find(q => q.qid === top && q.type === 'group');
+  if(!parent) return;
+  const allBlanks = [];
+  parent.subs.forEach(sub => {
+    if(sub.type === 'subgroup') sub.blanks.forEach(b => allBlanks.push(b.qid));
+    else allBlanks.push(sub.qid);
+  });
+  const allDone = allBlanks.every(id => answers[id]);
+  const el = document.getElementById(`check-group-${top}`);
+  if(el) el.textContent = allDone ? '✓' : '';
+}
+
+// ── 복구 ──────────────────────────────────────────────
+function restoreAnswerUI(){
+  let restored = 0;
+  const blanks = collectBlankQids();
+  blanks.forEach(({qid, type}) => {
+    const saved = answers[qid];
+    if(saved === undefined) return;
+    restored++;
+    if(type === 'obj'){
+      const el = document.getElementById(`choice-${qid}-${saved}`);
+      if(el) el.classList.add('selected');
+    } else {
+      const ta = document.getElementById(`subj-${qid}`);
+      if(ta) ta.value = saved;
+    }
+    const chk = document.getElementById(`check-${qid}`); if(chk) chk.textContent = '✓';
+    updateGroupCheck(qid);
+  });
+  updateProgress();
+  if(restored > 0) showRestoreToast(restored);
+}
+function showRestoreToast(count){
+  const t = document.createElement('div');
+  t.style.cssText = 'position:fixed;top:64px;left:50%;transform:translateX(-50%);background:var(--green);color:white;padding:10px 18px;border-radius:20px;font-size:13px;font-weight:600;z-index:50;box-shadow:0 4px 12px rgba(0,0,0,0.2)';
+  t.textContent = `이전에 입력한 ${count}개 답안을 복구했어요`;
+  document.body.appendChild(t);
+  setTimeout(()=>{ t.style.transition='opacity 0.4s'; t.style.opacity='0'; }, 2600);
+  setTimeout(()=> t.remove(), 3100);
+}
+
+// ── 진행도 ────────────────────────────────────────────
+function updateProgress(){
+  const total = collectBlankQids().length;
+  const done  = Object.keys(answers).length;
+  const pct   = total ? Math.round((done/total)*100) : 0;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-count').textContent = `${done} / ${total}`;
+  document.getElementById('progress-text').textContent = done===total ? '모든 빈칸 입력 완료 🎉' : '답안 입력 중';
+  document.getElementById('submit-info-text').textContent = done<total ? `${total-done}칸 남았어요` : '전체 입력 완료';
+  document.getElementById('submit-btn').disabled = done < total;
+}
+
+// ── 제출 ──────────────────────────────────────────────
+function doSubmit(){
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>제출 중...';
+
+  const blanks = collectBlankQids();
+  const payload = {
+    memberCode, testId: currentTestId,
+    answers: blanks.map(({qid, type}) => ({
+      qid, type, answer: answers[qid] !== undefined ? String(answers[qid]) : '',
+    })),
+  };
+
+  api('submitAnswers', payload)
+    .then(res => {
+      if(res.success){
+        isSubmitted = true; clearDraft(); disableExitWarning(); showDone();
+      } else {
+        btn.disabled = false; btn.textContent = '제출하기';
+        alert(res.error || '제출 실패');
+      }
+    })
+    .catch(err => {
+      btn.disabled = false; btn.textContent = '제출하기';
+      alert('제출 중 오류가 났어요. 인터넷 연결을 확인하고 다시 눌러주세요.\n(' + err.message + ')');
+    });
+}
+
+function showDone(){
+  showScreen('done');
+  document.getElementById('done-code').textContent = memberCode;
+  document.getElementById('done-test').textContent = currentTestId;
+  document.getElementById('done-time').textContent = new Date().toLocaleString('ko-KR');
+  document.getElementById('done-answered').textContent =
+    Object.keys(answers).length + ' / ' + collectBlankQids().length + '칸';
+}
+
+function showScreen(name){
+  ['loading','start','test','done'].forEach(s => {
+    document.getElementById('screen-'+s).classList.toggle('hidden', s !== name);
+  });
+}
+</script>
+</body>
+</html>
