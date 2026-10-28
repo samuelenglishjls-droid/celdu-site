@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>셀듀 통합관리</title>
+<style>
+html,body{margin:0;height:100%;background:#fff}
+iframe{display:block;border:0;width:100%;height:100%}
+.msg{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;font:14px -apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;color:#888;z-index:-1}
+</style>
+</head>
+<body>
+<div class="msg">불러오는 중…</div>
+<script>
+// 셀듀 통합관리 웹앱(Apps Script)을 celdu.net/hr 주소로 보여주는 페이지.
+// 로그인 앱이 #t=티켓 을 붙여 돌려보내면, 주소창에서 지운 뒤 웹앱에 넘긴다.
+(function () {
+  var EXEC = 'https://script.google.com/macros/s/AKfycbx7kEeFMJ4A-zBOZU4nXWtbd3IApD4xiF3Rql25ceqh-2wVoa6fKGyEiEtnXDV0EZce3g/exec';
+  var m = location.hash.match(/^#t=([^&]+)/);
+  var src = EXEC + '?embed=hr' + (m ? '&t=' + m[1] : '');
+  if (location.hash) history.replaceState(null, '', location.pathname);
+  var f = document.createElement('iframe');
+  f.src = src;
+  f.title = '셀듀 통합관리';
+  f.allow = 'clipboard-write; clipboard-read';
+  document.body.appendChild(f);
+})();
+</script>
+</body>
+</html>
