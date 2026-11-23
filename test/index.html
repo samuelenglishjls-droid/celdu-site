@@ -363,7 +363,9 @@ function findMyTests(){
 function renderToday(res){
   const tests = res.tests || [];
   $('today-wrap').classList.remove('hidden');
-  $('today-hello').textContent = res.name ? `${res.name} 학생, 오늘 볼 시험이에요` : '오늘 볼 시험';
+  $('today-hello').textContent = tests.length
+    ? (res.name ? `${res.name} 학생, 오늘 볼 시험이에요` : '오늘 볼 시험')
+    : (res.name ? `${res.name} 학생` : '');
   $('today-list').innerHTML = tests.map((t, i) => `
     <div class="today-item" data-idx="${i}" onclick="pickToday(${i})">
       <div class="today-radio"></div>
