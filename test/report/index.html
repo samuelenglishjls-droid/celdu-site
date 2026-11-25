@@ -138,7 +138,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Pretendard','Segoe UI',sans-s
 const API_URL = 'https://script.google.com/macros/s/AKfycbw4Qj_GZvSlLHI7p94RuLY_EAiPPkvkVT9Q3hbDC_rCi0BZpKslueIw5n8_Qjt4rljQuA/exec';
 async function api(fn, ...args){
   let lastErr;
-  for(let attempt=0; attempt<2; attempt++){
+  for(let attempt=0; attempt<3; attempt++){
     try{
       const r = await fetch(API_URL, {
         method:'POST',
@@ -149,7 +149,7 @@ async function api(fn, ...args){
       const j = await r.json();
       if(!j.ok) throw new Error(j.error || '서버 오류');
       return j.result;
-    }catch(e){ lastErr = e; await new Promise(r=>setTimeout(r,800)); }
+    }catch(e){ lastErr = e; console.warn('[api] '+fn+' 재시도', e && e.message); await new Promise(r=>setTimeout(r,1000*(attempt+1))); }
   }
   throw lastErr;
 }
@@ -292,7 +292,12 @@ function wnLoad(memberCode, testId, areaId){
     if(wnActive !== k) return;
     var a = document.getElementById(areaId);
     if(a) a.innerHTML = wnRender(res, k);
-  }).catch(function(){});
+  }).catch(function(e){
+    console.warn('[wrong-notes] 불러오기 실패', e && e.message);
+    if(wnActive !== k) return;
+    var a = document.getElementById(areaId);
+    if(a) a.innerHTML = '<div class="wn-card"><div class="wn-sub" style="margin:0">오답 노트를 불러오지 못했어요. <a href="#" onclick="wnLoad(\'' + String(memberCode).replace(/'/g,'') + '\',\'' + String(testId).replace(/'/g,"\\'") + '\',\'' + areaId + '\');return false;">다시 불러오기</a></div></div>';
+  });
 }
 function wnRender(res, k){
   if(!res.hasReport) return '';
