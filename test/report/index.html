@@ -313,7 +313,7 @@ function wnRender(res, k){
       + '<div class="wn-row"><span class="wn-k ok">정답</span><span class="wn-v">' + wnTok(it.correct, 'o')
       + (it.others && it.others.length ? '<div class="wn-alt">이것도 정답: ' + it.others.slice(0, 2).map(wnEsc).join(' / ') + (it.others.length > 2 ? ' 외 ' + (it.others.length - 2) + '개' : '') + '</div>' : '')
       + '</span></div>'
-      + '<div class="wn-why"><b>틀린 이유</b>' + wnEsc(it.note)
+      + '<div class="wn-why"><b>' + (it.unanswered ? '안내' : '틀린 이유') + '</b>' + wnEsc(it.note)
       + (it.source === 'pending' ? ' <span class="wn-wait">(자세한 설명 준비 중)</span>' : '') + '</div>'
       + '</div>';
   }).join('');
