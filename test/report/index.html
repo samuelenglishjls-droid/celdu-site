@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>CELDU 성적 조회</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --green:#0F6E56;--green-light:#E1F5EE;--green-mid:#1D9E75;
+  --amber:#854F0B;--amber-light:#FAEEDA;
+  --blue:#1B5E8C;--blue-light:#E3F0F9;
+  --red:#A32D2D;--red-light:#FCEBEB;
+  --border:#e8e8e8;--bg:#f7f7f5;--white:#fff;
+  --text:#1a1a1a;--text-sub:#6b6b6b;--text-hint:#aaa;
+  --r:14px;--r-sm:9px;--shadow:0 1px 3px rgba(0,0,0,0.08);
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Pretendard','Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.header{background:var(--white);border-bottom:1px solid var(--border);padding:0 16px;position:sticky;top:0;z-index:20;box-shadow:var(--shadow)}
+.header-inner{max-width:640px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:52px}
+.logo{font-size:17px;font-weight:800;color:var(--green);letter-spacing:-0.5px}
+.test-badge{font-size:12px;background:var(--green-light);color:var(--green);padding:4px 10px;border-radius:20px;font-weight:600}
+.container{max-width:640px;margin:0 auto;padding:16px}
+
+/* 조회 */
+.search-wrap{display:flex;flex-direction:column;align-items:center;padding:40px 0 24px;text-align:center}
+.search-icon{width:64px;height:64px;background:var(--green-light);border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:16px}
+.search-title{font-size:22px;font-weight:800;margin-bottom:6px}
+.search-sub{font-size:14px;color:var(--text-sub);line-height:1.6;margin-bottom:24px}
+.field-label{font-size:13px;color:var(--text-sub);margin-bottom:7px;display:block;font-weight:500;text-align:left;width:100%}
+.code-input{width:100%;padding:14px 16px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:17px;font-weight:600;letter-spacing:2px;color:var(--text);background:var(--white);text-transform:uppercase;margin-bottom:4px}
+.code-input:focus{outline:none;border-color:var(--green-mid)}
+.code-hint{font-size:12px;color:var(--text-hint);margin-bottom:16px;text-align:left;width:100%}
+.err-text{font-size:13px;color:var(--red);margin-bottom:8px;display:none;text-align:left;width:100%}
+.btn{width:100%;padding:14px;border:none;border-radius:var(--r-sm);font-size:15px;font-weight:700;cursor:pointer;background:var(--green);color:white;transition:opacity 0.15s}
+.btn:hover{opacity:0.92}
+.btn:disabled{opacity:0.4;cursor:not-allowed}
+
+/* 리포트 */
+.report-head{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:14px;box-shadow:var(--shadow)}
+.rh-name{font-size:20px;font-weight:800}
+.rh-meta{font-size:13px;color:var(--text-sub);margin-top:4px}
+.score-banner{background:linear-gradient(135deg,var(--green),var(--green-mid));border-radius:var(--r);padding:24px;text-align:center;margin-bottom:14px;color:white}
+.score-grade{font-size:14px;opacity:0.85;margin-bottom:6px;font-weight:600}
+.score-big{font-size:46px;font-weight:800;line-height:1}
+.score-sub{font-size:13px;opacity:0.85;margin-top:6px}
+
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:14px;box-shadow:var(--shadow)}
+.card-title{font-size:14px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:6px}
+.bar-row{margin-bottom:13px}
+.bar-row:last-child{margin-bottom:0}
+.bar-label{display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px}
+.bar-label .name{color:var(--text);max-width:70%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar-label .val{color:var(--text-sub);font-weight:700}
+.bar-track{height:9px;background:#eee;border-radius:5px;overflow:hidden}
+.bar-fill{height:100%;border-radius:5px;background:linear-gradient(90deg,var(--green-mid),var(--green))}
+.bar-fill.mid{background:linear-gradient(90deg,#e0b76a,var(--amber))}
+.bar-fill.low{background:linear-gradient(90deg,#d97777,var(--red))}
+
+.comment-card{background:var(--green-light);border:1px solid #c5e8db;border-radius:var(--r);padding:18px;margin-bottom:14px}
+.comment-title{font-size:14px;font-weight:700;color:var(--green);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.comment-text{font-size:14px;line-height:1.7;color:#0a3d31}
+
+.test-tabs{display:flex;gap:8px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px}
+.test-tab{flex-shrink:0;padding:8px 14px;border:1.5px solid var(--border);border-radius:20px;font-size:13px;cursor:pointer;background:var(--white);white-space:nowrap}
+.test-tab.active{border-color:var(--green);background:var(--green-light);color:var(--green);font-weight:600}
+
+.muted{text-align:center;color:var(--text-hint);font-size:14px;padding:40px 16px}
+.spinner-lg{width:32px;height:32px;border:3px solid #eee;border-top-color:var(--green);border-radius:50%;animation:spin 0.8s linear infinite;margin:40px auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner{width:16px;height:16px;border:2.5px solid rgba(255,255,255,0.4);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite;display:inline-block;vertical-align:-3px;margin-right:6px}
+.hidden{display:none!important}
+.back-btn{font-size:13px;color:var(--text-sub);background:none;border:none;cursor:pointer;padding:4px}
+/* [오답노트] */
+.wn-card{background:#fff;border:1px solid #e8e8e8;border-radius:14px;padding:18px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,0.08)}
+.wn-title{font-size:14px;font-weight:700;margin-bottom:4px}
+.wn-sub{font-size:12px;color:#6b6b6b;margin-bottom:12px}
+.wn-item{border-top:1px solid #f0f0f0;padding:12px 0}
+.wn-item:first-of-type,.wn-sub+.wn-item{border-top:none;padding-top:2px}
+.wn-hide{display:none}
+.wn-head{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:#6b6b6b;margin-bottom:8px}
+.wn-q{font-weight:700;color:#1a1a1a;flex-shrink:0}
+.wn-row{display:flex;gap:8px;font-size:14px;line-height:1.6;margin-bottom:3px}
+.wn-k{flex-shrink:0;width:38px;font-size:12px;font-weight:700;padding-top:2px}
+.wn-k.my{color:#A32D2D}.wn-k.ok{color:#0F6E56}
+.wn-v{word-break:break-word;min-width:0}
+.wn-v .x{background:#FCEBEB;color:#A32D2D;text-decoration:line-through;border-radius:3px;padding:0 2px}
+.wn-v .o{background:#E1F5EE;color:#0F6E56;font-weight:700;border-radius:3px;padding:0 2px}
+.wn-empty{color:#aaa}
+.wn-alt{font-size:12px;color:#6b6b6b}
+.wn-why{margin-top:7px;background:#FAEEDA;color:#4a2c06;border-radius:9px;padding:9px 11px;font-size:13px;line-height:1.6}
+.wn-why b{color:#854F0B;margin-right:6px}
+.wn-wait{color:#9a7a4a;font-size:12px}
+.wn-more{width:100%;margin-top:4px;padding:10px;border:1px solid #e8e8e8;border-radius:9px;background:#fff;font-size:13px;cursor:pointer;color:#6b6b6b}
+</style>
+</head>
+<body>
+
+<!-- 조회 화면 -->
+<div id="screen-search">
+  <div class="header">
+    <div class="header-inner">
+      <div class="logo">CELDU</div>
+      <div class="test-badge">성적 조회</div>
+    </div>
+  </div>
+  <div class="container">
+    <div class="search-wrap">
+      <div class="search-icon">📊</div>
+      <div class="search-title">성적 조회</div>
+      <div class="search-sub">회원번호를 입력하면<br>성적과 코멘트를 확인할 수 있습니다.</div>
+      <label class="field-label">회원번호</label>
+      <input class="code-input" id="code-input" type="text" placeholder="U0000" maxlength="12"
+        autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false"
+        oninput="onInput()" onkeydown="if(event.key==='Enter')doSearch()">
+      <div class="code-hint">예: U1234 · 모르면 선생님께 문의하세요</div>
+      <div class="err-text" id="err"></div>
+      <button class="btn" id="search-btn" onclick="doSearch()" disabled>조회하기</button>
+    </div>
+  </div>
+</div>
+
+<!-- 리포트 화면 -->
+<div id="screen-report" class="hidden">
+  <div class="header">
+    <div class="header-inner">
+      <div class="logo">CELDU</div>
+      <button class="back-btn" onclick="goBack()">← 다시 조회</button>
+    </div>
+  </div>
+  <div class="container" id="report-body"></div>
+</div>
+
+<script>
+// celdu.net/test/report : 구글 계정 없이(13세 미만 Family Link 포함) 성적을 조회하는 페이지.
+// 원본은 Apps Script의 report 화면. 서버 함수는 doPost(허용 목록)로 호출한다.
+const API_URL = 'https://script.google.com/macros/s/AKfycbw4Qj_GZvSlLHI7p94RuLY_EAiPPkvkVT9Q3hbDC_rCi0BZpKslueIw5n8_Qjt4rljQuA/exec';
+async function api(fn, ...args){
+  let lastErr;
+  for(let attempt=0; attempt<2; attempt++){
+    try{
+      const r = await fetch(API_URL, {
+        method:'POST',
+        headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body: JSON.stringify({ fn, args }),
+        credentials:'omit', redirect:'follow',
+      });
+      const j = await r.json();
+      if(!j.ok) throw new Error(j.error || '서버 오류');
+      return j.result;
+    }catch(e){ lastErr = e; await new Promise(r=>setTimeout(r,800)); }
+  }
+  throw lastErr;
+}
+let allReports = [];
+let currentIdx = 0;
+
+function onInput(){
+  const v = document.getElementById('code-input');
+  v.value = v.value.trim().toUpperCase();
+  document.getElementById('err').style.display = 'none';
+  document.getElementById('search-btn').disabled = v.value.length < 2;
+}
+
+function doSearch(){
+  const code = document.getElementById('code-input').value.trim().toUpperCase();
+  if(!code.startsWith('U')){ showErr('회원번호는 U로 시작합니다.'); return; }
+
+  const btn = document.getElementById('search-btn');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>조회 중...';
+
+  api('getStudentReports', code)
+    .then(res => {
+      btn.disabled = false; btn.textContent = '조회하기';
+      if(!res.success){ showErr(res.error || '조회 실패'); return; }
+      if(!res.reports.length){ showErr('해당 회원번호의 성적이 아직 없습니다.'); return; }
+      allReports = res.reports;
+      wnCode = code;
+      currentIdx = 0;
+      showReport();
+    })
+    .catch(err => {
+      btn.disabled = false; btn.textContent = '조회하기';
+      showErr('조회 중 오류가 났어요. 인터넷 연결을 확인하고 다시 눌러주세요. (' + err.message + ')');
+    });
+}
+
+function showErr(msg){
+  const e = document.getElementById('err');
+  e.textContent = msg; e.style.display = 'block';
+}
+
+function goBack(){
+  document.getElementById('screen-report').classList.add('hidden');
+  document.getElementById('screen-search').classList.remove('hidden');
+}
+
+function showReport(){
+  document.getElementById('screen-search').classList.add('hidden');
+  document.getElementById('screen-report').classList.remove('hidden');
+  renderReport();
+}
+
+function renderReport(){
+  const r = allReports[currentIdx];
+  const body = document.getElementById('report-body');
+
+  // 여러 시험 탭
+  let tabsHtml = '';
+  if(allReports.length > 1){
+    tabsHtml = `<div class="test-tabs">${allReports.map((rep,i)=>`
+      <div class="test-tab ${i===currentIdx?'active':''}" onclick="switchTest(${i})">${rep.testId}</div>
+    `).join('')}</div>`;
+  }
+
+  body.innerHTML = `
+    ${tabsHtml}
+    <div class="report-head">
+      <div class="rh-name">${r.name} 학생</div>
+      <div class="rh-meta">${r.branch} · ${r.testId}</div>
+      ${(r.term || r.examDatetime) ? `<div class="rh-meta">${[r.term, formatDate(r.examDatetime)].filter(Boolean).join(' · ')}</div>` : ''}
+    </div>
+    <div class="score-banner">
+      <div class="score-grade">등급 ${r.grade}</div>
+      <div class="score-big">${r.totalPct}점</div>
+      <div class="score-sub">${r.totalScore} / ${r.totalPossible}점</div>
+    </div>
+    <div class="card">
+      <div class="card-title">📚 단원별 성취도</div>
+      ${renderBars(r.unitScores)}
+    </div>
+    <div class="card">
+      <div class="card-title">✏️ 유형별 성취도</div>
+      ${renderBars(r.typeScores, true)}
+    </div>
+    <div class="comment-card">
+      <div class="comment-title">💬 코멘트 </div>
+      <div class="comment-text">${(r.aiComment && r.aiComment !== '__PENDING__') ? r.aiComment : 'AI 코멘트를 생성하고 있습니다. 잠시 후 다시 확인해주세요.'}</div>
+    </div>
+    <div id="wn-area"></div>
+  `;
+  wnLoad(wnCode, r.testId, 'wn-area');
+}
+
+function renderBars(scores, isType){
+  const keys = Object.keys(scores||{});
+  if(!keys.length) return '<div class="muted">데이터 없음</div>';
+  return keys.map(k => {
+    const s = scores[k];
+    const pct = s.pct;
+    const cls = pct < 50 ? 'low' : pct < 75 ? 'mid' : '';
+    const label = isType ? typeLabel(k) : k;
+    return `<div class="bar-row">
+      <div class="bar-label"><span class="name">${label}</span><span class="val">${pct}%</span></div>
+      <div class="bar-track"><div class="bar-fill ${cls}" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join('');
+}
+
+function switchTest(i){ currentIdx = i; renderReport(); }
+function typeLabel(t){ return ({obj:'선다형',brief:'단답형',short:'서술형',essay:'논술형'})[t] || t; }
+function formatDate(s){
+  if(!s) return '';
+  const d = new Date(s);
+  if(isNaN(d.getTime())) return s;
+  const pad = n => String(n).padStart(2,'0');
+  return `${d.getFullYear()}.${pad(d.getMonth()+1)}.${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+// ===== [오답노트] 비객관식 오답: 내 답 / 정답 / 틀린 이유 (2026-10-23) =====
+var wnCache = {}, wnOpen = {}, wnActive = '', wnCode = '';
+function wnEsc(s){
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
+function wnTok(arr, cls){
+  if(!arr || !arr.length) return '<span class="wn-empty">(빈칸)</span>';
+  return arr.map(function(t){ return t[1] ? '<span class="' + cls + '">' + wnEsc(t[0]) + '</span>' : wnEsc(t[0]); }).join(' ');
+}
+function wnTypeLabel(t){ return ({obj:'선다형',brief:'단답형',short:'서술형',essay:'논술형'})[t] || t; }
+function wnLoad(memberCode, testId, areaId){
+  var k = String(memberCode) + '|' + String(testId);
+  wnActive = k;
+  var area = document.getElementById(areaId);
+  if(!area || !memberCode || !testId) return;
+  if(wnCache[k]){ area.innerHTML = wnRender(wnCache[k], k); return; }
+  area.innerHTML = '';
+  api('getWrongNotes', memberCode, testId).then(function(res){
+    if(!res || !res.success) return;
+    wnCache[k] = res;
+    if(wnActive !== k) return;
+    var a = document.getElementById(areaId);
+    if(a) a.innerHTML = wnRender(res, k);
+  }).catch(function(){});
+}
+function wnRender(res, k){
+  if(!res.hasReport) return '';
+  var items = res.items || [];
+  if(!items.length){
+    return res.nonObjCount ? '<div class="wn-card"><div class="wn-title">📝 오답 노트</div><div class="wn-sub" style="margin:0">서술형·논술형 문항을 모두 맞혔어요.</div></div>' : '';
+  }
+  var LIMIT = 5, open = !!wnOpen[k];
+  var html = items.map(function(it, i){
+    return '<div class="wn-item' + (i >= LIMIT && !open ? ' wn-hide' : '') + '">'
+      + '<div class="wn-head"><span class="wn-q">' + wnEsc(it.label) + '</span><span>' + wnEsc(it.unit) + ' · ' + wnTypeLabel(it.type) + '</span></div>'
+      + '<div class="wn-row"><span class="wn-k my">내 답</span><span class="wn-v">' + wnTok(it.student, 'x') + '</span></div>'
+      + '<div class="wn-row"><span class="wn-k ok">정답</span><span class="wn-v">' + wnTok(it.correct, 'o')
+      + (it.others && it.others.length ? '<div class="wn-alt">이것도 정답: ' + it.others.slice(0, 2).map(wnEsc).join(' / ') + (it.others.length > 2 ? ' 외 ' + (it.others.length - 2) + '개' : '') + '</div>' : '')
+      + '</span></div>'
+      + '<div class="wn-why"><b>틀린 이유</b>' + wnEsc(it.note)
+      + (it.source === 'pending' ? ' <span class="wn-wait">(자세한 설명 준비 중)</span>' : '') + '</div>'
+      + '</div>';
+  }).join('');
+  var more = (items.length > LIMIT && !open) ? '<button class="wn-more" onclick="wnMore(this)">나머지 ' + (items.length - LIMIT) + '문항 더 보기</button>' : '';
+  return '<div class="wn-card"><div class="wn-title">📝 오답 노트</div>'
+    + '<div class="wn-sub">서술형·논술형에서 틀린 ' + items.length + '문항 (객관식·단답형 제외)</div>' + html + more + '</div>';
+}
+function wnMore(btn){
+  wnOpen[wnActive] = true;
+  var c = btn.parentNode;
+  Array.prototype.forEach.call(c.querySelectorAll('.wn-hide'), function(e){ e.classList.remove('wn-hide'); });
+  btn.parentNode.removeChild(btn);
+}
+</script>
+</body>
+</html>
