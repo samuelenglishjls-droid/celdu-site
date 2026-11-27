@@ -10,14 +10,14 @@
   color-scheme: light;
   --bg:#f6f7f9; --surface:#ffffff; --border:#e4e6ea; --grid:#eceef1;
   --text:#191919; --text2:#666666; --text3:#8a8f98; --accent:#257de0;
-  --s1:#257de0; --s2:#f47230; --s3:#00b894; --s4:#f2a600; --s5:#ee7fac; --s6:#008a17;
+  --s1:#257de0; --s2:#f47230; --s3:#00b894; --s4:#f2a600; --s5:#ee7fac; --s6:#008a17; --cancel:#b9bdc4;
   --good:#0a7d2c;
 }
 @media (prefers-color-scheme: dark){
   :root{ color-scheme: dark;
     --bg:#111214; --surface:#191919; --border:#2c2e33; --grid:#26282c;
     --text:#efefef; --text2:#9c9c9c; --text3:#7c8088; --accent:#338ced;
-    --s1:#338ced; --s2:#e76624; --s3:#00a888; --s4:#d28e05; --s5:#e24d8b; --s6:#0aac23;
+    --s1:#338ced; --s2:#e76624; --s3:#00a888; --s4:#d28e05; --s5:#e24d8b; --s6:#0aac23; --cancel:#5b5f66;
     --good:#3fbf62;
   }
 }
@@ -56,6 +56,7 @@ h1{font-size:22px;margin:0;font-weight:700;letter-spacing:-.02em}
 .col-hit{fill:transparent;cursor:pointer}
 .col-sel{fill:var(--accent);opacity:.08}
 .tot{fill:var(--text2);font-size:11px;font-weight:600}
+.inl{fill:#fff;font-size:10.5px;font-weight:700;pointer-events:none}
 .tip{position:absolute;pointer-events:none;background:var(--surface);border:1px solid var(--border);box-shadow:0 6px 20px rgba(0,0,0,.12);border-radius:8px;padding:8px 10px;font-size:12.5px;min-width:150px;display:none;z-index:5}
 .tip b{display:block;margin-bottom:4px}
 .tip .r{display:flex;justify-content:space-between;gap:12px}
@@ -132,8 +133,14 @@ footer{color:var(--text3);font-size:12px;line-height:1.7;margin-top:8px}
   </div>
 
   <div class="card">
-    <h2 id="chart-title">기간별 신규 테스트</h2>
-    <div class="hint">막대를 누르면 그 기간을 상세 보기 기간으로 선택합니다. 다시 누르면 전체.</div>
+    <div class="cardhead">
+      <h2 id="chart-title">기간별 신규 테스트</h2>
+      <div class="seg small" id="colorby">
+        <button data-c="status" class="on">상태별</button>
+        <button data-c="branch">분원별</button>
+      </div>
+    </div>
+    <div class="hint">막대 높이 = 테스트 수, 색 = 결과. 파란 칸 안 숫자가 등록 수. 막대를 누르면 그 기간을 상세 보기 기간으로 선택합니다.</div>
     <div class="legend" id="legend"></div>
     <div id="chart"><div class="tip" id="tip"></div></div>
   </div>
@@ -186,9 +193,19 @@ const ROWS = (()=>{ const E=window.ENROLL; if(!E) return []; const AL="ABCDEFGHI
 const BRANCHES = ["남동","인하","소사","은계","명지","율하"];
 const COLOR = {"남동":"--s1","인하":"--s2","소사":"--s3","은계":"--s4","명지":"--s5","율하":"--s6"};
 const STATUSES = ["접수","상담","대기","등록","미등록","보류","탈락","취소"];
+const SGROUPS = [ // 아래부터 쌓는 순서
+  {k:"등록", label:"등록", c:"--s1", f:s=>s==="등록"},
+  {k:"진행", label:"진행 중(접수·상담·대기)", short:"진행 중", c:"--s3", f:s=>["접수","상담","대기"].includes(s)},
+  {k:"보류", label:"보류", c:"--s4", f:s=>s==="보류"},
+  {k:"미등록", label:"미등록·탈락", c:"--s2", f:s=>s==="미등록"||s==="탈락"},
+  {k:"취소", label:"취소", c:"--cancel", f:s=>s==="취소"},
+];
+function series(){ return state.color==="status"
+  ? SGROUPS.map(g=>({k:g.k,label:g.label,short:g.short||g.label,c:g.c,f:r=>g.f(r[3])}))
+  : BRANCHES.filter(b=>state.on.has(b)).map(b=>({k:b,label:b,short:b,c:COLOR[b],f:r=>r[0]===b})); }
 const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 
-const state = { mode:"month", range:"all", on:new Set(BRANCHES), sel:null, metric:"test" };
+const state = { mode:"month", range:"all", on:new Set(BRANCHES), sel:null, metric:"test", color:"status" };
 
 const dateOf = r => r[1] || r[2];
 function monthKey(d){ return d.slice(0,7); }
@@ -242,7 +259,8 @@ function renderControls(){
   sel.value=state.range;
   document.getElementById("branches").innerHTML = BRANCHES.map(b=>
     `<button class="chip ${state.on.has(b)?"":"off"}" data-b="${b}"><span class="dot" style="background:var(${COLOR[b]})"></span>${b}</button>`).join("");
-  document.getElementById("legend").innerHTML = BRANCHES.filter(b=>state.on.has(b)).map(b=>`<span><i style="background:var(${COLOR[b]})"></i>${b}</span>`).join("");
+  document.querySelectorAll("#colorby button").forEach(x=>x.classList.toggle("on", x.dataset.c===state.color));
+  document.getElementById("legend").innerHTML = series().map(s=>`<span><i style="background:var(${s.c})"></i>${s.label}</span>`).join("");
 }
 
 function renderKPIs(rows, scopeLabel){
@@ -260,10 +278,10 @@ function renderKPIs(rows, scopeLabel){
 
 function renderChart(keys, rows){
   const box=document.getElementById("chart");
-  const W=Math.max(box.clientWidth,320), H=280, m={t:18,r:8,b:30,l:34};
+  const W=Math.max(box.clientWidth,320), H=290, m={t:22,r:8,b:30,l:34};
   const iw=W-m.l-m.r, ih=H-m.t-m.b;
-  const on=BRANCHES.filter(b=>state.on.has(b));
-  const data=keys.map(k=>{ const o={k}; on.forEach(b=>o[b]=0); rows.forEach(r=>{ if(keyOf(r)===k && o[r[0]]!==undefined) o[r[0]]++; }); o.total=on.reduce((s,b)=>s+o[b],0); return o; });
+  const S=series();
+  const data=keys.map(k=>{ const rs=rows.filter(r=>keyOf(r)===k); const o={k,rs}; S.forEach(s=>o[s.k]=rs.filter(s.f).length); o.total=rs.length; return o; });
   const max=Math.max(1,...data.map(d=>d.total));
   const step = max<=10?2: max<=25?5: max<=60?10: 20;
   const top=Math.ceil(max/step)*step;
@@ -277,18 +295,16 @@ function renderChart(keys, rows){
   data.forEach((d,i)=>{
     const cx=m.l+bw*i+bw/2, x=cx-barW/2;
     if(state.sel===d.k) s+=`<rect class="col-sel" x="${m.l+bw*i}" y="${m.t}" width="${bw}" height="${ih}"/>`;
-    let acc=0; const segs=on.filter(b=>d[b]>0);
-    segs.forEach((b,j)=>{
-      const y0=y(acc), y1=y(acc+d[b]); acc+=d[b];
-      const h=Math.max(0,y0-y1-(j<segs.length-1?0:0));
-      const gap = j>0?2:0; // surface gap between stacked fills
-      const isTop=j===segs.length-1;
-      const hh=Math.max(0.5,h-gap);
+    let acc=0; const segs=S.filter(q=>d[q.k]>0);
+    segs.forEach((q,j)=>{
+      const y0=y(acc), y1=y(acc+d[q.k]); acc+=d[q.k];
+      const gap=j>0?2:0, hh=Math.max(0.5,(y0-y1)-gap), isTop=j===segs.length-1;
       if(isTop){ const r=Math.min(4,hh/2,barW/2);
-        s+=`<path class="bar" fill="var(${COLOR[b]})" d="M${x},${y0-gap} V${y1+r} Q${x},${y1} ${x+r},${y1} H${x+barW-r} Q${x+barW},${y1} ${x+barW},${y1+r} V${y0-gap} Z"/>`;
-      } else s+=`<rect class="bar" fill="var(${COLOR[b]})" x="${x}" y="${y1}" width="${barW}" height="${hh}"/>`;
+        s+=`<path class="bar" fill="var(${q.c})" d="M${x},${y0-gap} V${y1+r} Q${x},${y1} ${x+r},${y1} H${x+barW-r} Q${x+barW},${y1} ${x+barW},${y1+r} V${y0-gap} Z"/>`;
+      } else s+=`<rect class="bar" fill="var(${q.c})" x="${x}" y="${y1}" width="${barW}" height="${hh}"/>`;
+      if(state.color==="status" && q.k==="등록" && hh>=14 && barW>=18) s+=`<text class="inl" x="${cx}" y="${y1+(hh)/2+4}" text-anchor="middle">${d[q.k]}</text>`;
     });
-    if(d.total>0 && (keys.length<=24)) s+=`<text class="tot" x="${cx}" y="${y(d.total)-5}" text-anchor="middle">${d.total}</text>`;
+    if(d.total>0 && keys.length<=24) s+=`<text class="tot" x="${cx}" y="${y(d.total)-6}" text-anchor="middle">${d.total}</text>`;
     s+=`<rect class="col-hit" data-i="${i}" x="${m.l+bw*i}" y="${m.t}" width="${bw}" height="${ih}"/>`;
   });
   s+=`</svg>`;
@@ -297,17 +313,18 @@ function renderChart(keys, rows){
   box.querySelectorAll(".col-hit").forEach(el=>{
     const d=data[+el.dataset.i];
     el.addEventListener("mousemove",e=>{
-      const reg=rows.filter(r=>keyOf(r)===d.k && r[3]==="등록").length;
-      tip.innerHTML=`<b>${labelOf(d.k,true)}</b>`+on.slice().reverse().map(b=>`<div class="r"><span><i style="background:var(${COLOR[b]})"></i>${b}</span><span>${d[b]}</span></div>`).join("")+`<div class="r" style="border-top:1px solid var(--grid);margin-top:4px;padding-top:4px"><span>합계</span><span><b style="display:inline">${d.total}</b></span></div><div class="r"><span>등록 · 등록률</span><span>${reg} · ${pct(st(rows.filter(r=>keyOf(r)===d.k)).rate)}</span></div>`;
+      const x=st(d.rs);
+      tip.innerHTML=`<b>${labelOf(d.k,true)}</b>`+S.slice().reverse().map(q=>`<div class="r"><span><i style="background:var(${q.c})"></i>${q.short}</span><span>${d[q.k]}</span></div>`).join("")+`<div class="r" style="border-top:1px solid var(--grid);margin-top:4px;padding-top:4px"><span>테스트 합계</span><span><b style="display:inline">${d.total}</b></span></div><div class="r"><span>등록률</span><span>${pct(x.rate)}</span></div>`;
       tip.style.display="block";
-      const bx=box.getBoundingClientRect(); let lx=e.clientX-bx.left+14; if(lx+170>bx.width) lx=e.clientX-bx.left-180;
+      const bx=box.getBoundingClientRect(); let lx=e.clientX-bx.left+14; if(lx+190>bx.width) lx=e.clientX-bx.left-200;
       tip.style.left=lx+"px"; tip.style.top=(e.clientY-bx.top-20)+"px";
     });
     el.addEventListener("mouseleave",()=>tip.style.display="none");
     el.addEventListener("click",()=>{ state.sel = state.sel===d.k?null:d.k; render(); });
   });
-  document.getElementById("chart-title").textContent = state.mode==="month"?"월별 신규 테스트":"학기별 신규 테스트";
+  document.getElementById("chart-title").textContent = (state.mode==="month"?"월별":"학기별")+" 신규 테스트 · "+(state.color==="status"?"상태별":"분원별");
 }
+
 
 function st(rs){ const n=rs.length, reg=rs.filter(r=>r[3]==="등록").length, taken=rs.filter(r=>r[3]!=="접수"&&r[3]!=="취소").length; return {n,reg,taken,rate: taken? reg/taken : null}; }
 const pct = x => x==null? "–" : Math.round(x*100)+"%";
@@ -382,6 +399,7 @@ document.getElementById("p-all").addEventListener("click",()=>{ state.sel=null; 
 document.getElementById("period").addEventListener("change",e=>{ state.sel=e.target.value||null; render(); });
 document.getElementById("p-prev").addEventListener("click",()=>{ const ks=window.__keys; if(!state.sel){ state.sel=ks[ks.length-1]; } else { const i=ks.indexOf(state.sel); if(i>0) state.sel=ks[i-1]; } render(); });
 document.getElementById("p-next").addEventListener("click",()=>{ const ks=window.__keys; const i=ks.indexOf(state.sel); if(i>=0&&i<ks.length-1) state.sel=ks[i+1]; render(); });
+document.getElementById("colorby").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b) return; state.color=b.dataset.c; render(); });
 document.getElementById("metric").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b) return; state.metric=b.dataset.k; render(); });
 document.getElementById("asof").textContent = ASOF.replace(/-/g,".");
 document.getElementById("mode").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b) return; state.mode=b.dataset.m; state.sel=null; state.range="all"; render(); });
@@ -389,7 +407,7 @@ document.getElementById("range").addEventListener("change",e=>{ state.range=e.ta
 document.getElementById("branches").addEventListener("click",e=>{ const b=e.target.closest(".chip"); if(!b) return; const n=b.dataset.b;
   if(state.on.has(n)){ if(state.on.size>1) state.on.delete(n); } else state.on.add(n); render(); });
 document.getElementById("branches").addEventListener("dblclick",e=>{ const b=e.target.closest(".chip"); if(!b) return; state.on=new Set([b.dataset.b]); render(); });
-(()=>{ const h=new URLSearchParams(location.hash.slice(1)); if(h.get("v")) state.mode=h.get("v"); if(h.get("m")) state.metric=h.get("m"); if(h.get("p")) state.sel=h.get("p"); })();
+(()=>{ const h=new URLSearchParams(location.hash.slice(1)); if(h.get("v")) state.mode=h.get("v"); if(h.get("m")) state.metric=h.get("m"); if(h.get("c")) state.color=h.get("c"); if(h.get("p")) state.sel=h.get("p"); })();
 let rt; window.addEventListener("resize",()=>{ clearTimeout(rt); rt=setTimeout(render,120); });
 render();
 </script>
