@@ -78,6 +78,20 @@ th.cur{color:var(--accent)}
 .hbar .c{text-align:right;font-variant-numeric:tabular-nums}
 .subgrid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
 .subgrid h3{font-size:13px;margin:0 0 6px;color:var(--text2);font-weight:600}
+.periodbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 14px;margin-bottom:12px}
+.plabel{font-weight:700;font-size:13px;margin-right:4px}
+.pbtn{font:inherit;font-size:13px;border:1px solid var(--border);background:var(--surface);color:var(--text);padding:6px 14px;border-radius:8px;cursor:pointer}
+.pbtn.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.pnav{font:inherit;font-size:16px;line-height:1;border:1px solid var(--border);background:var(--surface);color:var(--text2);width:32px;height:32px;border-radius:8px;cursor:pointer}
+.pnav:disabled{opacity:.35;cursor:default}
+#period.on{border-color:var(--accent);color:var(--accent);font-weight:600}
+.phint{color:var(--text3);font-size:12px;margin-left:auto}
+.cardhead{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px}
+.seg.small button{padding:4px 11px;font-size:12.5px}
+td.rate{font-weight:600}
+td.rate small{display:block;font-weight:400;color:var(--text3);font-size:10.5px;line-height:1.2}
+.hbar{grid-template-columns:84px 1fr 30px 36px!important}
+.hbar .p{text-align:right;color:var(--text3);font-size:11.5px;font-variant-numeric:tabular-nums}
 .pill{display:inline-block;font-size:11px;padding:1px 7px;border-radius:999px;background:var(--grid);color:var(--text2);margin-left:6px;vertical-align:1px}
 footer{color:var(--text3);font-size:12px;line-height:1.7;margin-top:8px}
 @media (max-width:820px){.kpis{grid-template-columns:repeat(2,1fr)}.grid2,.subgrid{grid-template-columns:1fr}}
@@ -101,6 +115,15 @@ footer{color:var(--text3);font-size:12px;line-height:1.7;margin-top:8px}
     <div class="chips" id="branches"></div>
   </div>
 
+  <div class="periodbar">
+    <span class="plabel">상세 보기 기간</span>
+    <button class="pbtn" id="p-all">전체</button>
+    <button class="pnav" id="p-prev" title="이전 기간">‹</button>
+    <select class="sel" id="period"></select>
+    <button class="pnav" id="p-next" title="다음 기간">›</button>
+    <span class="phint">KPI · 분원별 상태 · 유입 구분/경로가 이 기간으로 바뀝니다</span>
+  </div>
+
   <div class="kpis">
     <div class="kpi"><div class="l" id="k-label">신규 테스트</div><div class="v" id="k-total">–</div><div class="n" id="k-total-n"></div></div>
     <div class="kpi"><div class="l">등록</div><div class="v" id="k-reg">–</div><div class="n">상태 '등록'</div></div>
@@ -110,26 +133,33 @@ footer{color:var(--text3);font-size:12px;line-height:1.7;margin-top:8px}
 
   <div class="card">
     <h2 id="chart-title">기간별 신규 테스트</h2>
-    <div class="hint">막대를 누르면 그 기간으로 아래 KPI·상태·경로가 바뀝니다. 다시 누르면 전체 기간.</div>
+    <div class="hint">막대를 누르면 그 기간을 상세 보기 기간으로 선택합니다. 다시 누르면 전체.</div>
     <div class="legend" id="legend"></div>
     <div id="chart"><div class="tip" id="tip"></div></div>
   </div>
 
   <div class="card">
-    <h2>분원 × 기간 <span class="pill">테스트 수 (등록 수)</span></h2>
-    <div class="hint">테스트 일자 기준. 테스트 일자가 비어 있으면 등록일 기준.</div>
+    <div class="cardhead">
+      <h2>분원 × 기간</h2>
+      <div class="seg small" id="metric">
+        <button data-k="test" class="on">테스트 수</button>
+        <button data-k="reg">등록 수</button>
+        <button data-k="rate">등록률</button>
+      </div>
+    </div>
+    <div class="hint" id="metric-hint"></div>
     <div class="tbl-wrap"><table id="pivot"></table></div>
   </div>
 
   <div class="grid2">
     <div class="card">
       <h2>분원별 상태 <span class="pill" id="st-scope">전체 기간</span></h2>
-      <div class="hint">&nbsp;</div>
+      <div class="hint">등록률 = 등록 ÷ (전체 − 접수 − 취소)</div>
       <div class="tbl-wrap"><table id="status"></table></div>
     </div>
     <div class="card">
       <h2>유입 구분 · 경로 <span class="pill" id="src-scope">전체 기간</span></h2>
-      <div class="hint">'선택안함'·미입력은 제외</div>
+      <div class="hint">건수 · 오른쪽 작은 숫자는 등록률. '선택안함'·미입력은 제외</div>
       <div class="subgrid">
         <div><h3>구분</h3><div id="kind"></div></div>
         <div><h3>경로</h3><div id="route"></div></div>
@@ -158,7 +188,7 @@ const COLOR = {"남동":"--s1","인하":"--s2","소사":"--s3","은계":"--s4","
 const STATUSES = ["접수","상담","대기","등록","미등록","보류","탈락","취소"];
 const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 
-const state = { mode:"month", range:"all", on:new Set(BRANCHES), sel:null };
+const state = { mode:"month", range:"all", on:new Set(BRANCHES), sel:null, metric:"test" };
 
 const dateOf = r => r[1] || r[2];
 function monthKey(d){ return d.slice(0,7); }
@@ -268,7 +298,7 @@ function renderChart(keys, rows){
     const d=data[+el.dataset.i];
     el.addEventListener("mousemove",e=>{
       const reg=rows.filter(r=>keyOf(r)===d.k && r[3]==="등록").length;
-      tip.innerHTML=`<b>${labelOf(d.k,true)}</b>`+on.slice().reverse().map(b=>`<div class="r"><span><i style="background:var(${COLOR[b]})"></i>${b}</span><span>${d[b]}</span></div>`).join("")+`<div class="r" style="border-top:1px solid var(--grid);margin-top:4px;padding-top:4px"><span>합계 (등록)</span><span><b style="display:inline">${d.total}</b> (${reg})</span></div>`;
+      tip.innerHTML=`<b>${labelOf(d.k,true)}</b>`+on.slice().reverse().map(b=>`<div class="r"><span><i style="background:var(${COLOR[b]})"></i>${b}</span><span>${d[b]}</span></div>`).join("")+`<div class="r" style="border-top:1px solid var(--grid);margin-top:4px;padding-top:4px"><span>합계</span><span><b style="display:inline">${d.total}</b></span></div><div class="r"><span>등록 · 등록률</span><span>${reg} · ${pct(st(rows.filter(r=>keyOf(r)===d.k)).rate)}</span></div>`;
       tip.style.display="block";
       const bx=box.getBoundingClientRect(); let lx=e.clientX-bx.left+14; if(lx+170>bx.width) lx=e.clientX-bx.left-180;
       tip.style.left=lx+"px"; tip.style.top=(e.clientY-bx.top-20)+"px";
@@ -279,13 +309,25 @@ function renderChart(keys, rows){
   document.getElementById("chart-title").textContent = state.mode==="month"?"월별 신규 테스트":"학기별 신규 테스트";
 }
 
+function st(rs){ const n=rs.length, reg=rs.filter(r=>r[3]==="등록").length, taken=rs.filter(r=>r[3]!=="접수"&&r[3]!=="취소").length; return {n,reg,taken,rate: taken? reg/taken : null}; }
+const pct = x => x==null? "–" : Math.round(x*100)+"%";
+const METRIC_HINT = {
+  test:"신규 테스트 건수 (취소 포함). 테스트 일자 기준, 비어 있으면 등록일 기준.",
+  reg:"상태가 '등록'인 건수. 테스트 일자 기준.",
+  rate:"등록률 = 등록 ÷ (전체 − 접수 − 취소). 아래 작은 숫자는 등록/응시 건수."
+};
 function renderPivot(keys, rows){
   const on=BRANCHES.filter(b=>state.on.has(b));
-  const cnt=(b,k,reg)=>rows.filter(r=>(b==null||r[0]===b)&&(k==null||keyOf(r)===k)&&(!reg||r[3]==="등록")).length;
-  let h=`<thead><tr><th>분원</th>${keys.map(k=>`<th class="${k===state.sel?"cur":""}">${labelOf(k)}</th>`).join("")}<th>합계</th></tr></thead><tbody>`;
-  const cell=(b,k)=>{ const n=cnt(b,k), r=cnt(b,k,true); return n? `<td>${n}<span class="reg">(${r})</span></td>` : `<td class="zero">·</td>`; };
-  on.forEach(b=>{ h+=`<tr><td><span style="display:inline-block;width:9px;height:9px;border-radius:3px;background:var(${COLOR[b]});margin-right:6px"></span>${b}</td>${keys.map(k=>cell(b,k)).join("")}${cell(b,null)}</tr>`; });
-  h+=`<tr class="total"><td>합계</td>${keys.map(k=>{const n=rows.filter(r=>keyOf(r)===k).length, r=rows.filter(x=>keyOf(x)===k&&x[3]==="등록").length; return n?`<td>${n}<span class="reg">(${r})</span></td>`:`<td class="zero">·</td>`;}).join("")}<td>${rows.length}<span class="reg">(${rows.filter(r=>r[3]==="등록").length})</span></td></tr></tbody>`;
+  document.querySelectorAll("#metric button").forEach(x=>x.classList.toggle("on", x.dataset.k===state.metric));
+  document.getElementById("metric-hint").textContent = METRIC_HINT[state.metric];
+  const pick=(b,k)=>rows.filter(r=>(b==null||r[0]===b)&&(k==null||keyOf(r)===k));
+  const cell=rs=>{ const s=st(rs);
+    if(state.metric==="test") return s.n? `<td>${s.n}</td>` : `<td class="zero">·</td>`;
+    if(state.metric==="reg") return s.n? `<td>${s.reg}</td>` : `<td class="zero">·</td>`;
+    return s.taken? `<td class="rate">${pct(s.rate)}<small>${s.reg}/${s.taken}</small></td>` : `<td class="zero">·</td>`; };
+  let h=`<thead><tr><th>분원</th>${keys.map(k=>`<th class="${k===state.sel?"cur":""}">${labelOf(k)}</th>`).join("")}<th>전체</th></tr></thead><tbody>`;
+  on.forEach(b=>{ h+=`<tr><td><span style="display:inline-block;width:9px;height:9px;border-radius:3px;background:var(${COLOR[b]});margin-right:6px"></span>${b}</td>${keys.map(k=>cell(pick(b,k))).join("")}${cell(pick(b,null))}</tr>`; });
+  h+=`<tr class="total"><td>합계</td>${keys.map(k=>cell(pick(null,k))).join("")}${cell(rows)}</tr></tbody>`;
   document.getElementById("pivot").innerHTML=h;
 }
 
@@ -301,18 +343,31 @@ function renderStatus(rows){
 }
 
 function hbars(el, rows, idx){
-  const c={}; rows.forEach(r=>{ const v=r[idx]; if(v && v!=="선택안함") c[v]=(c[v]||0)+1; });
-  const arr=Object.entries(c).sort((a,b)=>b[1]-a[1]); const max=Math.max(1,...arr.map(a=>a[1]));
-  document.getElementById(el).innerHTML = arr.length? arr.map(([k,v])=>`<div class="hbar"><span class="k" title="${k}">${k}</span><span class="t"><div style="width:${v/max*100}%"></div></span><span class="c">${v}</span></div>`).join("") : `<div style="color:var(--text3);font-size:12.5px">입력된 값 없음</div>`;
+  const g={}; rows.forEach(r=>{ const v=r[idx]; if(v && v!=="선택안함") (g[v]=g[v]||[]).push(r); });
+  const arr=Object.entries(g).sort((a,b)=>b[1].length-a[1].length); const max=Math.max(1,...arr.map(a=>a[1].length));
+  document.getElementById(el).innerHTML = arr.length? arr.map(([k,rs])=>`<div class="hbar"><span class="k" title="${k}">${k}</span><span class="t"><div style="width:${rs.length/max*100}%"></div></span><span class="c">${rs.length}</span><span class="p">${pct(st(rs).rate)}</span></div>`).join("") : `<div style="color:var(--text3);font-size:12.5px">입력된 값 없음</div>`;
+}
+
+function renderPeriod(keys){
+  const sel=document.getElementById("period");
+  const rev=keys.slice().reverse();
+  sel.innerHTML = `<option value="">기간 선택…</option>` + rev.map(k=>`<option value="${k}">${labelOf(k,true)}</option>`).join("");
+  sel.value = state.sel||"";
+  sel.classList.toggle("on", !!state.sel);
+  document.getElementById("p-all").classList.toggle("on", !state.sel);
+  const i = state.sel? keys.indexOf(state.sel) : -1;
+  document.getElementById("p-prev").disabled = state.sel? i<=0 : false;
+  document.getElementById("p-next").disabled = !state.sel || i>=keys.length-1;
 }
 
 function render(){
   renderControls();
   const keys=visibleKeys();
   if(state.sel && !keys.includes(state.sel)) state.sel=null;
+  renderPeriod(keys);
   const rowsAll=filtered().filter(r=>keys.includes(keyOf(r)));
   const scoped= state.sel? rowsAll.filter(r=>keyOf(r)===state.sel) : rowsAll;
-  const scopeLabel = state.sel? labelOf(state.sel,true) : (document.getElementById("range").selectedOptions[0]?.textContent||"전체 기간");
+  const scopeLabel = state.sel? labelOf(state.sel,true) : (state.range==="all"? "전체" : "전체 · "+document.getElementById("range").selectedOptions[0]?.textContent);
   renderKPIs(scoped, scopeLabel);
   renderChart(keys, rowsAll);
   renderPivot(keys, rowsAll);
@@ -320,14 +375,21 @@ function render(){
   hbars("kind", scoped, 4); hbars("route", scoped, 5);
   document.getElementById("st-scope").textContent=scopeLabel;
   document.getElementById("src-scope").textContent=scopeLabel;
+  window.__keys=keys;
 }
 
+document.getElementById("p-all").addEventListener("click",()=>{ state.sel=null; render(); });
+document.getElementById("period").addEventListener("change",e=>{ state.sel=e.target.value||null; render(); });
+document.getElementById("p-prev").addEventListener("click",()=>{ const ks=window.__keys; if(!state.sel){ state.sel=ks[ks.length-1]; } else { const i=ks.indexOf(state.sel); if(i>0) state.sel=ks[i-1]; } render(); });
+document.getElementById("p-next").addEventListener("click",()=>{ const ks=window.__keys; const i=ks.indexOf(state.sel); if(i>=0&&i<ks.length-1) state.sel=ks[i+1]; render(); });
+document.getElementById("metric").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b) return; state.metric=b.dataset.k; render(); });
 document.getElementById("asof").textContent = ASOF.replace(/-/g,".");
 document.getElementById("mode").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b) return; state.mode=b.dataset.m; state.sel=null; state.range="all"; render(); });
 document.getElementById("range").addEventListener("change",e=>{ state.range=e.target.value; state.sel=null; render(); });
 document.getElementById("branches").addEventListener("click",e=>{ const b=e.target.closest(".chip"); if(!b) return; const n=b.dataset.b;
   if(state.on.has(n)){ if(state.on.size>1) state.on.delete(n); } else state.on.add(n); render(); });
 document.getElementById("branches").addEventListener("dblclick",e=>{ const b=e.target.closest(".chip"); if(!b) return; state.on=new Set([b.dataset.b]); render(); });
+(()=>{ const h=new URLSearchParams(location.hash.slice(1)); if(h.get("v")) state.mode=h.get("v"); if(h.get("m")) state.metric=h.get("m"); if(h.get("p")) state.sel=h.get("p"); })();
 let rt; window.addEventListener("resize",()=>{ clearTimeout(rt); rt=setTimeout(render,120); });
 render();
 </script>
